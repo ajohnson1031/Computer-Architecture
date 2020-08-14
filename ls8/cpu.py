@@ -94,7 +94,8 @@ class CPU:
         POP = self.POP
         running = self.running
         sp = self.sp
-        self.reg[7] = sp
+        regs = self.reg
+        regs[7] = sp
         
         while running:
             command = bin(self.ram_read(pc))[2:]
@@ -103,19 +104,19 @@ class CPU:
             add_to_counter = (int(command, 2) >> 6) + 1
               
             if command == LDI:
-                self.reg[operand_a] = operand_b
+                regs[operand_a] = operand_b
             elif command == MULT:
                 self.alu("MULT", operand_a, operand_b)
             elif command == PRN:
                 print(TGREEN + str(self.reg[operand_a]) + ENDC, end=' => ' )
             elif command == PUSH:
-                self.reg[7] -= 1
-                sp = self.reg[7]
+                regs[7] -= 1
+                sp = regs[7]
                 self.ram[sp] = self.reg[operand_a]
             elif command == POP:
-                sp = self.reg[7]
-                self.reg[operand_a] = self.ram[sp]
-                self.reg[7] += 1
+                sp = regs[7]
+                regs[operand_a] = self.ram[sp]
+                regs[7] += 1
             elif command == HLT:
                 print(TYELLOW + "Program halted." + ENDC)
                 running = False
