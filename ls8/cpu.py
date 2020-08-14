@@ -7,6 +7,8 @@ TRED = '\033[31m'
 TYELLOW = '\033[33m'
 ENDC = '\033[m'
 
+
+
 class CPU:
     """Main CPU class."""
 
@@ -26,7 +28,6 @@ class CPU:
                 
     def load(self):
         """Load a program into memory."""
-        print(self.sp)
         address = 0
 
         # For now, we've just hardcoded a program:
