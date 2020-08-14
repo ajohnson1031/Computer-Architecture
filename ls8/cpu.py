@@ -19,11 +19,14 @@ class CPU:
         self.LDI = '10000010'
         self.PRN = '1000111'
         self.MULT = '10100010'
-        self.running = True        
-        
+        self.PUSH = '1000101'
+        self.POP = '1000110'
+        self.running = True
+        self.sp = int(0xF4)
+                
     def load(self):
         """Load a program into memory."""
-
+        print(self.sp)
         address = 0
 
         # For now, we've just hardcoded a program:
@@ -33,11 +36,10 @@ class CPU:
         try: 
             with open(sys.argv[1]) as file:
                 for instruction in file:
-                    inst = instruction.split("#")[0]
+                    inst = instruction.split("#")[0].strip()
                     if inst == '':
                         continue
                     if inst[0] == '1' or inst [0] == '0':
-                        num = inst[:8]
                         self.ram[address] = int(inst, 2)
                         address += 1
         except FileNotFoundError:
@@ -87,13 +89,16 @@ class CPU:
         LDI = self.LDI
         PRN = self.PRN
         MULT = self.MULT
+        PUSH = self.PUSH
+        POP = self.POP
         running = self.running
+        sp = self.sp
+        self.reg[7] = sp
         
         while running:
-            command = bin(self.ram_read(pc))[2:] 
+            command = bin(self.ram_read(pc))[2:]
             operand_a = self.ram_read(pc + 1)
-            operand_b = self.ram_read(pc + 2)
-            
+            operand_b = self.ram_read(pc + 2)       
             add_to_counter = (int(command, 2) >> 6) + 1
               
             if command == LDI:
@@ -101,7 +106,21 @@ class CPU:
             elif command == MULT:
                 self.alu("MULT", operand_a, operand_b)
             elif command == PRN:
-                print(TGREEN + str(self.reg[operand_a]) + ENDC, end=', => ' )
+                print(TGREEN + str(self.reg[operand_a]) + ENDC, end=' => ' )
+            elif command == PUSH:
+                if (sp <= int(0xF4) and sp >= int(0xE2)): 
+                    self.reg[7] -= 1
+                    sp = self.reg[7]
+                    self.ram[sp] = self.reg[operand_a]
+                else:
+                    print(TRED + "Cannot push beyond stack boundaries.", ENDC)
+            elif command == POP:
+                if (sp <= int(0xF4) and sp >= int(0xE2)):
+                    sp = self.reg[7]
+                    self.reg[operand_a] = self.ram[sp]
+                    self.reg[7] += 1
+                else:
+                    print(TRED + "Cannot pop beyond stack boundaries.", ENDC)
             elif command == HLT:
                 print(TYELLOW + "Program halted." + ENDC)
                 running = False
