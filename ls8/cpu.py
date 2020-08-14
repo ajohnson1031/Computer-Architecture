@@ -22,7 +22,7 @@ class CPU:
         self.PUSH = '1000101'
         self.POP = '1000110'
         self.running = True
-        self.sp = int(0xF4)
+        self.sp = 0xF4
                 
     def load(self):
         """Load a program into memory."""
@@ -108,14 +108,14 @@ class CPU:
             elif command == PRN:
                 print(TGREEN + str(self.reg[operand_a]) + ENDC, end=' => ' )
             elif command == PUSH:
-                if (sp <= int(0xF4) and sp >= int(0xE2)): 
+                if (sp <= 0xF4 and sp >= 0xE2): 
                     self.reg[7] -= 1
                     sp = self.reg[7]
                     self.ram[sp] = self.reg[operand_a]
                 else:
                     print(TRED + "Cannot push beyond stack boundaries.", ENDC)
             elif command == POP:
-                if (sp <= int(0xF4) and sp >= int(0xE2)):
+                if (sp <= 0xF4 and sp >= 0xE2):
                     sp = self.reg[7]
                     self.reg[operand_a] = self.ram[sp]
                     self.reg[7] += 1
