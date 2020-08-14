@@ -108,19 +108,13 @@ class CPU:
             elif command == PRN:
                 print(TGREEN + str(self.reg[operand_a]) + ENDC, end=' => ' )
             elif command == PUSH:
-                if (sp <= 0xF4 and sp >= 0xE2): 
-                    self.reg[7] -= 1
-                    sp = self.reg[7]
-                    self.ram[sp] = self.reg[operand_a]
-                else:
-                    print(TRED + "Cannot push beyond stack boundaries.", ENDC)
+                self.reg[7] -= 1
+                sp = self.reg[7]
+                self.ram[sp] = self.reg[operand_a]
             elif command == POP:
-                if (sp <= 0xF4 and sp >= 0xE2):
-                    sp = self.reg[7]
-                    self.reg[operand_a] = self.ram[sp]
-                    self.reg[7] += 1
-                else:
-                    print(TRED + "Cannot pop beyond stack boundaries.", ENDC)
+                sp = self.reg[7]
+                self.reg[operand_a] = self.ram[sp]
+                self.reg[7] += 1
             elif command == HLT:
                 print(TYELLOW + "Program halted." + ENDC)
                 running = False
