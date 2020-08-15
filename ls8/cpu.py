@@ -29,7 +29,6 @@ class CPU:
         """Load a program into memory."""
         address = 0
 
-        # For now, we've just hardcoded a program:
         if len(sys.argv) < 2:
             print(TRED + 'File to open is: "examples/mult.ls8"', ENDC)
             sys.exit()
@@ -74,11 +73,11 @@ class CPU:
 
         print()
 
-    def ram_read(self, addr):
-        return self.ram[addr]
+    def ram_read(self, MAR):
+        return self.ram[MAR]
     
-    def ram_write(self, val, addr):
-        self.ram[addr] = val
+    def ram_write(self, MDR, MAR):
+        self.ram[MAR] = MDR
     
     def run(self):
         """Run the CPU."""
@@ -89,27 +88,27 @@ class CPU:
         regs[7] = sp
         
         while running:
-            command = self.ram_read(pc)
+            IR = self.ram_read(pc)
             operand_a = self.ram_read(pc + 1)
             operand_b = self.ram_read(pc + 2)    
-            add_to_counter = (int(bin(command)[2:], 2) >> 6) + 1
+            add_to_counter = (IR >> 6) + 1
             
-            if command >> 5 & 0b001:
-                self.alu(bin(command), operand_a, operand_b)
+            if IR >> 5 & 0b001:
+                self.alu(bin(IR), operand_a, operand_b)
             else: 
-                if command == LDI:
+                if IR == LDI:
                     regs[operand_a] = operand_b           
-                if command == PRN:
-                    print(TGREEN + str(self.reg[operand_a]) + ENDC, end=' => ' )
-                if command == PUSH:
+                if IR == PRN:
+                    print(TGREEN + str(regs[operand_a]) + ENDC, end=' => ' )
+                if IR == PUSH:
                     regs[7] -= 1
                     sp = regs[7]
-                    self.ram[sp] = self.reg[operand_a]
-                if command == POP:
+                    self.ram[sp] = regs[operand_a]
+                if IR == POP:
                     sp = regs[7]
                     regs[operand_a] = self.ram[sp]
                     regs[7] += 1
-                if command == HLT:
+                if IR == HLT:
                     print(TYELLOW + "Program halted." + ENDC)
                     running = False
                 
