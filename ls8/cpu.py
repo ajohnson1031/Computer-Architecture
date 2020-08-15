@@ -7,6 +7,13 @@ TRED = '\033[31m'
 TYELLOW = '\033[33m'
 ENDC = '\033[m'
 
+HLT = 0b00000001 
+LDI = 0b10000010
+PRN = 0b01000111
+MULT = 0b10100010
+PUSH = 0b01000101
+POP = 0b01000110
+
 class CPU:
     """Main CPU class."""
 
@@ -15,12 +22,6 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
-        self.HLT = '1'
-        self.LDI = '10000010'
-        self.PRN = '1000111'
-        self.MULT = '10100010'
-        self.PUSH = '1000101'
-        self.POP = '1000110'
         self.running = True
         self.sp = 0xF4
                 
@@ -38,9 +39,8 @@ class CPU:
                     inst = instruction.split("#")[0].strip()
                     if inst == '':
                         continue
-                    if inst[0] == '1' or inst [0] == '0':
-                        self.ram[address] = int(inst, 2)
-                        address += 1
+                    self.ram[address] = int(inst, 2)
+                    address += 1
         except FileNotFoundError:
             print(f'{sys.argv[0]}: {sys.argv[1]} not found.')    
   
@@ -84,23 +84,16 @@ class CPU:
     def run(self):
         """Run the CPU."""
         pc = self.pc
-        HLT = self.HLT
-        LDI = self.LDI
-        PRN = self.PRN
-        MULT = self.MULT
-        PUSH = self.PUSH
-        POP = self.POP
         running = self.running
         sp = self.sp
         regs = self.reg
         regs[7] = sp
         
         while running:
-            command = bin(self.ram_read(pc))[2:]
+            command = self.ram_read(pc)
             operand_a = self.ram_read(pc + 1)
-            operand_b = self.ram_read(pc + 2)       
-            add_to_counter = (int(command, 2) >> 6) + 1
-              
+            operand_b = self.ram_read(pc + 2)    
+            add_to_counter = (int(bin(command)[2:], 2) >> 6) + 1
               
             if command == LDI:
                 regs[operand_a] = operand_b
