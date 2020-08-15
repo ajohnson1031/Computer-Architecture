@@ -10,9 +10,12 @@ ENDC = '\033[m'
 HLT = 0b00000001 
 LDI = 0b10000010
 PRN = 0b01000111
+ADD = 0b10100000
 MULT = 0b10100010
 PUSH = 0b01000101
 POP = 0b01000110
+CALL = 0b01010000 
+RET = 0b00010001
 
 class CPU:
     """Main CPU class."""
@@ -45,7 +48,7 @@ class CPU:
   
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
-        if op == "ADD":
+        if int(op, 2) == ADD:
             self.reg[reg_a] += self.reg[reg_b]
         #elif op == "SUB": etc
         if int(op, 2) == MULT:
@@ -108,8 +111,21 @@ class CPU:
                     sp = regs[7]
                     regs[operand_a] = self.ram[sp]
                     regs[7] += 1
+                if IR == CALL:
+                    NEXT_IR = pc + (IR >> 6) + 1
+                    regs[7] -= 1
+                    sp = regs[7]
+                    self.ram[sp] = NEXT_IR
+                    pc = regs[operand_a]
+                if IR == RET:
+                    sp = regs[7]
+                    regs[7] += 1
+                    pc = self.ram[sp]     
                 if IR == HLT:
                     print(TYELLOW + "Program halted." + ENDC)
                     running = False
                 
-            pc += add_to_counter
+                print(bin(IR)) 
+            
+            if not (IR >> 4) & 0b001:
+                pc += add_to_counter 
