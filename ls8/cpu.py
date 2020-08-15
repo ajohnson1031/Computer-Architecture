@@ -7,8 +7,6 @@ TRED = '\033[31m'
 TYELLOW = '\033[33m'
 ENDC = '\033[m'
 
-
-
 class CPU:
     """Main CPU class."""
 
@@ -102,6 +100,7 @@ class CPU:
             operand_a = self.ram_read(pc + 1)
             operand_b = self.ram_read(pc + 2)       
             add_to_counter = (int(command, 2) >> 6) + 1
+              
               
             if command == LDI:
                 regs[operand_a] = operand_b
