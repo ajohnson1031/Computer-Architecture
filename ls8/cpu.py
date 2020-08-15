@@ -46,11 +46,10 @@ class CPU:
   
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
-
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
         #elif op == "SUB": etc
-        if op == "MULT":
+        if int(op, 2) == MULT:
             self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
@@ -94,23 +93,24 @@ class CPU:
             operand_a = self.ram_read(pc + 1)
             operand_b = self.ram_read(pc + 2)    
             add_to_counter = (int(bin(command)[2:], 2) >> 6) + 1
-              
-            if command == LDI:
-                regs[operand_a] = operand_b
-            elif command == MULT:
-                self.alu("MULT", operand_a, operand_b)
-            elif command == PRN:
-                print(TGREEN + str(self.reg[operand_a]) + ENDC, end=' => ' )
-            elif command == PUSH:
-                regs[7] -= 1
-                sp = regs[7]
-                self.ram[sp] = self.reg[operand_a]
-            elif command == POP:
-                sp = regs[7]
-                regs[operand_a] = self.ram[sp]
-                regs[7] += 1
-            elif command == HLT:
-                print(TYELLOW + "Program halted." + ENDC)
-                running = False
-              
+            
+            if command >> 5 & 0b001:
+                self.alu(bin(command), operand_a, operand_b)
+            else: 
+                if command == LDI:
+                    regs[operand_a] = operand_b           
+                if command == PRN:
+                    print(TGREEN + str(self.reg[operand_a]) + ENDC, end=' => ' )
+                if command == PUSH:
+                    regs[7] -= 1
+                    sp = regs[7]
+                    self.ram[sp] = self.reg[operand_a]
+                if command == POP:
+                    sp = regs[7]
+                    regs[operand_a] = self.ram[sp]
+                    regs[7] += 1
+                if command == HLT:
+                    print(TYELLOW + "Program halted." + ENDC)
+                    running = False
+                
             pc += add_to_counter
