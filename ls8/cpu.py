@@ -48,10 +48,10 @@ class CPU:
   
     def alu(self, op, reg_a, reg_b):
         """ALU operations."""
-        if int(op, 2) == ADD:
+        if op == ADD:
             self.reg[reg_a] += self.reg[reg_b]
         #elif op == "SUB": etc
-        if int(op, 2) == MULT:
+        elif op == MULT:
             self.reg[reg_a] *= self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
@@ -95,9 +95,9 @@ class CPU:
             operand_a = self.ram_read(pc + 1)
             operand_b = self.ram_read(pc + 2)    
             add_to_counter = (IR >> 6) + 1
-            
+        
             if IR >> 5 & 0b001:
-                self.alu(bin(IR), operand_a, operand_b)
+                self.alu(IR, operand_a, operand_b)
             else: 
                 if IR == LDI:
                     regs[operand_a] = operand_b           
@@ -115,17 +115,15 @@ class CPU:
                     NEXT_IR = pc + (IR >> 6) + 1
                     regs[7] -= 1
                     sp = regs[7]
-                    self.ram[sp] = NEXT_IR
+                    self.ram[sp] = NEXT_IR              
                     pc = regs[operand_a]
                 if IR == RET:
                     sp = regs[7]
-                    regs[7] += 1
+                    regs[7] += 1                    
                     pc = self.ram[sp]     
                 if IR == HLT:
                     print(TYELLOW + "Program halted." + ENDC)
                     running = False
-                
-                print(bin(IR)) 
             
             if not (IR >> 4) & 0b001:
                 pc += add_to_counter 
