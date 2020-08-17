@@ -140,7 +140,7 @@ class CPU:
                     else:
                         self.pc += operand_a
                 if IR == JNE:
-                    if not (flag_status & 0b001):
+                    if not flag_status & 0b001:
                         self.pc = self.reg[operand_a]
                     else:
                         self.pc += operand_a    
