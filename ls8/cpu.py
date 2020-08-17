@@ -16,6 +16,10 @@ PUSH = 0b01000101
 POP = 0b01000110
 CALL = 0b01010000 
 RET = 0b00010001
+CMP = 0b10100111
+JEQ = 0b01010101
+JNE = 0b01010110
+JMP = 0b01010100
 
 class CPU:
     """Main CPU class."""
@@ -25,6 +29,7 @@ class CPU:
         self.ram = [0] * 256
         self.reg = [0] * 8
         self.pc = 0
+        self.fl = 0b00000000
         self.running = True
         self.sp = 0xF4
                 
@@ -53,6 +58,11 @@ class CPU:
         #elif op == "SUB": etc
         elif op == MULT:
             self.reg[reg_a] *= self.reg[reg_b]
+        elif op == CMP:
+            self.fl = 4 if self.reg[reg_a] < self.reg[reg_b] else 0           
+            self.fl = 2 if self.reg[reg_a] > self.reg[reg_b] else 0
+            self.fl = 1 if self.reg[reg_a] == self.reg[reg_b] else 0
+           
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -84,17 +94,17 @@ class CPU:
     
     def run(self):
         """Run the CPU."""
-        pc = self.pc
         running = self.running
         sp = self.sp
         regs = self.reg
         regs[7] = sp
         
         while running:
-            IR = self.ram_read(pc)
-            operand_a = self.ram_read(pc + 1)
-            operand_b = self.ram_read(pc + 2)    
+            IR = self.ram_read(self.pc)
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)    
             add_to_counter = (IR >> 6) + 1
+            flag_status = self.fl
         
             if IR >> 5 & 0b001:
                 self.alu(IR, operand_a, operand_b)
@@ -112,18 +122,30 @@ class CPU:
                     regs[operand_a] = self.ram[sp]
                     regs[7] += 1
                 if IR == CALL:
-                    NEXT_IR = pc + (IR >> 6) + 1
+                    NEXT_IR = self.pc + (IR >> 6) + 1
                     regs[7] -= 1
                     sp = regs[7]
                     self.ram[sp] = NEXT_IR              
-                    pc = regs[operand_a]
+                    self.pc = regs[operand_a]
                 if IR == RET:
                     sp = regs[7]
                     regs[7] += 1                    
-                    pc = self.ram[sp]     
+                    self.pc = self.ram[sp]     
                 if IR == HLT:
                     print(TYELLOW + "Program halted." + ENDC)
                     running = False
-            
+                if IR == JEQ:
+                    if flag_status & 0b001:
+                        self.pc = self.reg[operand_a]
+                    else:
+                        self.pc += operand_a
+                if IR == JNE:
+                    if not (flag_status & 0b001):
+                        self.pc = self.reg[operand_a]
+                    else:
+                        self.pc += operand_a    
+                if IR == JMP:
+                    self.pc = self.reg[operand_a]
+                        
             if not (IR >> 4) & 0b001:
-                pc += add_to_counter 
+                self.pc += add_to_counter 
